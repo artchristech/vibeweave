@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and temps
+*.log
+/tmp/
+*.tmp
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Large generated (we keep the base64 in index.html intentionally)
+# but ignore any other large binaries if added later
+*.mov
+*.mp4
+*.zip
+
+# Node / deps if ever added
+node_modules/

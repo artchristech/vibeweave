@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeWeave</title>
+  <meta name="description" content="Describe the game. Get the prompt that ships something good.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=SF+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f9f7f2;
+      --bg-elevated: #ffffff;
+      --text-primary: #1c1c1e;
+      --text-secondary: #3c3c43;
+      --text-tertiary: #8e8e93;
+      --accent: #0071e3;
+      --accent-light: #147ce5;
+      --border: #e5e5e7;
+      --border-strong: #d1d1d6;
+      --gold: #c9a227;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --shadow-soft: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+      --shadow-medium: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 64px 24px 120px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 72px;
+    }
+
+    .logo {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .nav {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      line-height: 1.05;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-secondary);
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .main-input {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 24px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .main-input:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.08), var(--shadow-medium);
+    }
+
+    .main-input textarea {
+      width: 100%;
+      border: none;
+      resize: none;
+      font-size: 17px;
+      line-height: 1.55;
+      font-family: inherit;
+      color: var(--text-primary);
+      background: transparent;
+      min-height: 132px;
+      outline: none;
+    }
+
+    .main-input textarea::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .inspirations {
+      margin-bottom: 48px;
+    }
+
+    .inspirations-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+
+    .inspiration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+      gap: 10px;
+    }
+
+    .inspiration-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      font-size: 13.5px;
+      line-height: 1.4;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .inspiration-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-medium);
+      color: var(--text-primary);
+    }
+
+    .primary-action {
+      width: 100%;
+      padding: 18px 28px;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+    }
+
+    .primary-action:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
+    }
+
+    .primary-action:active {
+      transform: scale(0.985);
+    }
+
+    .primary-action:disabled {
+      background: #a8a8a8;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .subtle-action {
+      display: block;
+      width: fit-content;
+      margin: 20px auto 0;
+      font-size: 13px;
+      color: var(--text-tertiary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .subtle-action:hover {
+      color: var(--text-secondary);
+      background: rgba(0,0,0,0.03);
+    }
+
+    /* Processing State */
+    .processing {
+      text-align: center;
+      padding: 72px 24px;
+    }
+
+    .processing .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .processing p {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    /* Result */
+    .result {
+      animation: resultEnter 420ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    }
+
+    @keyframes resultEnter {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+
+    .result-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text-secondary);
+    }
+
+    .prompt-container {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      box-shadow: var(--shadow-soft);
+      font-family: "SF Mono", ui-monospace, monospace;
+      font-size: 14.2px;
+      line-height: 1.65;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      max-height: 520px;
+      overflow-y: auto;
+    }
+
+    .export-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .export-btn {
+      flex: 1;
+      min-width: 148px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .export-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #f5f8ff;
+    }
+
+    .export-btn.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .export-btn.primary:hover {
+      background: var(--accent-light);
+    }
+
+    .back-link {
+      margin-top: 32px;
+      text-align: center;
+    }
+
+    .back-link button {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 16px;
+    }
+
+    .back-link button:hover {
+      color: var(--text-secondary);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 80px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">VibeWeave</div>
+      <div class="nav">For game creators</div>
+    </header>
+
+    <!-- ONBOARDING / INPUT -->
+    <div id="input-screen">
+      <div class="hero">
+        <h1>What game do you<br>want to make?</h1>
+        <p>Describe the feeling, the fantasy, the loop. We’ll turn it into a prompt that actually delivers.</p>
+      </div>
+
+      <div class="main-input">
+        <textarea id="idea-input" placeholder="A cozy roguelike where every plant you grow becomes a card, and death only makes the garden stronger."></textarea>
+      </div>
+
+      <div class="inspirations">
+        <div class="inspirations-label">Or start with one of these</div>
+        <div class="inspiration-grid">
+          <div class="inspiration-card" onclick="useExample(0)">
+            Cozy plant roguelike deckbuilder. Every run permanently changes the garden.
+          </div>
+          <div class="inspiration-card" onclick="useExample(1)">
+            2D action platformer with a weighty, intentional grappling hook.
+          </div>
+          <div class="inspiration-card" onclick="useExample(2)">
+            Turn-based tactics inside a living spaceship that can grow and revolt.
+          </div>
+          <div class="inspiration-card" onclick="useExample(3)">
+            Endless runner that feels like jazz — rhythmic and never the same twice.
+          </div>
+        </div>
+      </div>
+
+      <button class="primary-action" onclick="weave()">Weave</button>
+
+      <button class="subtle-action" onclick="showAdvanced()">Tune the weave</button>
+
+      <!-- Advanced controls (hidden by default, elegant reveal) -->
+      <div id="advanced-panel" class="hidden" style="margin-top: 32px; padding: 24px; background: white; border: 1px solid var(--border); border-radius: var(--radius);">
+        <div style="display: grid; gap: 20px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-tertiary); display: block; margin-bottom: 6px;">Target engine</label>
+            <select id="engine-select" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white;">
+              <option value="godot-4">Godot 4.4</option>
+              <option value="unity-6">Unity 6</option>
+              <option value="phaser">Phaser 3</option>
+              <option value="three-webgpu">Three.js + WebGPU</option>
+              <option value="canvas">Vanilla Canvas</option>
+            </select>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-tertiary); display: block; margin-bottom: 6px;">Juice level</label>
+              <select id="juice-level" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white;">
+                <option value="high">High — rich feedback</option>
+                <option value="balanced" selected>Balanced</option>
+                <option value="refined">Refined &amp; minimal</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-tertiary); display: block; margin-bottom: 6px;">Scope</label>
+              <select id="scope-level" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white;">
+                <option value="tight">Tight &amp; focused</option>
+                <option value="balanced" selected>Balanced</option>
+                <option value="expressive">Room to explore</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROCESSING -->
+    <div id="processing-screen" class="hidden">
+      <div class="processing">
+        <div class="spinner"></div>
+        <p>Weaving something exceptional…</p>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-screen" class="hidden">
+      <div class="result">
+        <div class="result-header">
+          <h2>Your prompt</h2>
+        </div>
+
+        <div id="prompt-output" class="prompt-container"></div>
+
+        <div class="export-actions">
+          <button class="export-btn primary" onclick="copyPrompt()">Copy prompt</button>
+          <button class="export-btn" onclick="exportClaude()">Save as CLAUDE.md</button>
+          <button class="export-btn" onclick="exportCursor()">Use in Cursor</button>
+        </div>
+
+        <div class="back-link">
+          <button onclick="resetToInput()">Weave something else</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      A quiet tool for people who ship games with AI.
+    </div>
+  </div>
+
+  <script>
+    // Simple elegant state
+    let currentPrompt = '';
+
+    function useExample(n) {
+      const examples = [
+        "A cozy roguelike deckbuilder where every plant you grow becomes a card, and death only makes the garden stronger.",
+        "2D action platformer with a weighty, intentional grappling hook that feels like Spider-Man but slower and more deliberate.",
+        "Turn-based tactics on the inside of a living spaceship. Every room can grow, die, or revolt.",
+        "An endless runner that feels like jazz — rhythmic, improvisational, never quite the same, but always musical."
+      ];
+      document.getElementById('idea-input').value = examples[n];
+      // Auto-weave for delightful speed on examples
+      setTimeout(() => {
+        weave();
+      }, 180);
+    }
+
+    function showAdvanced() {
+      const panel = document.getElementById('advanced-panel');
+      panel.classList.remove('hidden');
+      panel.style.opacity = '0';
+      panel.style.transition = 'opacity 220ms ease';
+      requestAnimationFrame(() => {
+        panel.style.opacity = '1';
+      });
+    }
+
+    function weave() {
+      const idea = document.getElementById('idea-input').value.trim();
+      if (!idea) {
+        alert("Tell me about the game you want to make.");
+        return;
+      }
+
+      // Hide input, show processing
+      document.getElementById('input-screen').classList.add('hidden');
+      document.getElementById('processing-screen').classList.remove('hidden');
+
+      // Simulate beautiful thinking time (in real version this would be the actual LLM call)
+      setTimeout(() => {
+        const prompt = generateHighQualityPrompt(idea);
+        currentPrompt = prompt;
+
+        document.getElementById('processing-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        const outputEl = document.getElementById('prompt-output');
+        outputEl.textContent = prompt;
+      }, 1350);
+    }
+
+    function generateHighQualityPrompt(idea) {
+      const engine = document.getElementById('engine-select')?.value || 'godot-4';
+      const juice = document.getElementById('juice-level')?.value || 'balanced';
+      const scope = document.getElementById('scope-level')?.value || 'balanced';
+
+      const engineGuidance = {
+        'godot-4': 'Godot 4.4 with GDScript. Heavy use of signals. Composition over inheritance. Typed where it helps.',
+        'unity-6': 'Unity 6 + C# with ScriptableObjects for data and events. New Input System. Strict decoupling.',
+        'phaser': 'Phaser 3. Clean architecture in a single file where possible. Precise feel is mandatory.',
+        'three-webgpu': 'Three.js + WebGPU. Performance and clarity first. Minimal dependencies.',
+        'canvas': 'Vanilla Canvas. Everything in one tight, well-commented file. 60fps is non-negotiable.'
+      }[engine];
+
+      const juiceLine = juice === 'high' 
+        ? 'Demand rich, layered feedback on every meaningful action (particles, timing, camera, audio, screen effects).'
+        : juice === 'refined'
+        ? 'Refined, intentional feedback only. Every effect must earn its presence.'
+        : 'Strong but tasteful juice. Clear feedback without visual noise.';
+
+      const scopeLine = scope === 'tight'
+        ? 'Extremely focused scope. One core loop, one primary verb family.'
+        : scope === 'expressive'
+        ? 'Allow some breathing room for interesting secondary systems, but protect the heart.'
+        : 'Balanced scope. Protect the core fantasy while allowing one strong secondary system.';
+
+      return `You are an elite indie game designer who has shipped dozens of small, high-feel games. You care more about how something feels in the first eight seconds than about feature lists.
+
+Raw fantasy:
+${idea}
+
+Constraints for this weave:
+- Engine & patterns: ${engineGuidance}
+- Juice philosophy: ${juiceLine}
+- Scope contract: ${scopeLine}
+
+Write a production-ready master prompt the developer can paste directly into Claude, Cursor, or their preferred model. Include:
+1. A strong role + taste statement
+2. The emotional promise (what the player should feel)
+3. Core loop + key verbs
+4. Engine-specific implementation guidance
+5. A concrete juice & feel checklist (8–12 items)
+6. The exact 4–6 follow-up prompts they should run after the first scaffold
+
+Be specific. Be opinionated. Protect the soul of the idea.`;
+    }
+
+    function copyPrompt() {
+      if (!currentPrompt) return;
+      navigator.clipboard.writeText(currentPrompt).then(() => {
+        const btns = document.querySelectorAll('.export-btn');
+        btns.forEach(b => {
+          if (b.textContent.includes('Copy')) {
+            const original = b.textContent;
+            b.textContent = 'Copied';
+            setTimeout(() => b.textContent = original, 1600);
+          }
+        });
+      });
+    }
+
+    function exportClaude() {
+      if (!currentPrompt) return;
+      const content = `# VibeWeave Prompt\n\n${currentPrompt}\n\n— Generated for the idea above`;
+      download('CLAUDE.md', content);
+    }
+
+    function exportCursor() {
+      if (!currentPrompt) return;
+      const content = `Apply this rule for all game development in this project.\n\n${currentPrompt}`;
+      download('vibeweave-game-rule.mdc', content);
+    }
+
+    function download(filename, text) {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+
+    function resetToInput() {
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('input-screen').classList.remove('hidden');
+      document.getElementById('idea-input').focus();
+    }
+
+    // Keyboard niceties
+    document.addEventListener('keydown', function(e) {
+      if (e.key === '/' && document.activeElement.tagName === 'BODY') {
+        e.preventDefault();
+        document.getElementById('idea-input').focus();
+      }
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !document.getElementById('result-screen').classList.contains('hidden')) {
+        e.preventDefault();
+        copyPrompt();
+      }
+    });
+
+    // Gentle focus on load
+    window.onload = function() {
+      setTimeout(() => {
+        const input = document.getElementById('idea-input');
+        if (input && !input.value) {
+          // Do nothing — let the user breathe
+        }
+      }, 800);
+    };
+  </script>
+</body>
+</html>

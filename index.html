@@ -338,6 +338,7 @@
         <button onclick="loadExample('precision-platformer')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Precision Platformer</button>
         <button onclick="loadExample('hades-like')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Hades-like</button>
         <button onclick="loadExample('cozy-mutation-roguelite')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Cozy Mutation Roguelite</button>
+        <button onclick="loadExample('metroidvania')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Metroidvania</button>
         <button onclick="saveCurrentPreset()" style="font-size:11px; padding:4px 8px; background:#fff; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Save current</button>
         <button onclick="loadLastPreset()" style="font-size:11px; padding:4px 8px; background:#fff; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Load last saved</button>
       </div>
@@ -530,6 +531,16 @@
           'Steal the permanent meaningful world changes and cozy exploration loop from cozy roguelites and games like Slay the Spire + Spiritfarer',
           'Avoid the punishing death spirals and lack of positive feedback in many roguelikes',
           'Warm, hand-crafted feel with readable icons and satisfying growth animations'
+        ]
+      },
+      'metroidvania': {
+        visuals: ['stylized-3d', 'hand-drawn'],
+        fantasy: 'A lone explorer reclaiming a ruined world by mastering new movement abilities that open previously inaccessible areas.',
+        mechanics: 'Ability-gated exploration. Backtracking that feels rewarding. Precise platforming + light combat. Map that reveals secrets over time.',
+        notes: [
+          'Steal the satisfying ability progression and world-as-puzzle from classic and modern Metroidvanias (Hollow Knight, Ori)',
+          'Avoid the cryptic progression and frustrating backtracking without clear visual language',
+          'Every new ability must dramatically change how the player reads and traverses the same spaces'
         ]
       }
     };

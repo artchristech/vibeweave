@@ -861,6 +861,8 @@
       }
       renderExtraNotes();
 
+      if (typeof updateSlopRisk === 'function') updateSlopRisk();
+
       composition.forEach(ref => {
         const chip = document.createElement('div');
         chip.className = 'dropped-chip';
@@ -914,6 +916,38 @@
 
       el.textContent = text;
       el.style.color = '#1c1c1e';
+
+      // Simple slop risk indicator
+      updateSlopRisk();
+    }
+
+    function updateSlopRisk() {
+      let riskEl = document.getElementById('slop-risk');
+      if (!riskEl) {
+        const preview = document.querySelector('.prompt-preview');
+        if (preview) {
+          riskEl = document.createElement('div');
+          riskEl.id = 'slop-risk';
+          riskEl.style.cssText = 'margin-top:8px; font-size:11px; color:#666; padding:4px 8px; background:#f9f7f2; border-radius:6px;';
+          preview.appendChild(riskEl);
+        } else return;
+      }
+      const numVisuals = composition.length;
+      const hasFantasy = !!(document.getElementById('core-fantasy')||{}).value;
+      const hasMechanics = !!(document.getElementById('mechanics')||{}).value;
+      const numNotes = extraReferences.length;
+      let score = 0;
+      if (numVisuals >= 1) score += 20;
+      if (numVisuals >= 2) score += 15;
+      if (hasFantasy) score += 25;
+      if (hasMechanics) score += 20;
+      if (numNotes >= 1) score += 10;
+      if (numNotes >= 2) score += 10;
+      let label = 'Low slop risk';
+      let color = '#2e7d32';
+      if (score < 40) { label = 'High slop risk — add more specifics'; color = '#c62828'; }
+      else if (score < 65) { label = 'Medium risk — more details help'; color = '#f57c00'; }
+      riskEl.innerHTML = `<strong style="color:${color}">${label}</strong> <span style="opacity:0.7">(${score}/100)</span> — more visuals + concrete fantasy/mechanics = dramatically better results`;
     }
 
     function clearCanvas() {

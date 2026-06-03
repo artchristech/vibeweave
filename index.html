@@ -373,6 +373,15 @@
             <div style="font-size:12px; font-weight:600; color:#666; margin:10px 0 6px;">KEY MECHANICS OR SYSTEMS YOU ALREADY KNOW YOU WANT</div>
             <textarea id="mechanics" placeholder="Time-rewind tied to physical tapes. Permanent world changes that carry between loops. One big hub that slowly reveals new paths." style="width:100%; height:46px; border:1px solid var(--border); border-radius:8px; padding:8px; font-size:13px; resize:vertical;"></textarea>
 
+            <div style="font-size:12px; font-weight:600; color:#666; margin:10px 0 6px;">TARGET (customizes the kit for your tools/engine)</div>
+            <select id="target-env" style="width:100%; border:1px solid var(--border); border-radius:8px; padding:6px; font-size:13px;" onchange="updateLivePrompt()">
+              <option value="general">General (Claude / Cursor)</option>
+              <option value="godot">Godot (GDScript / scenes)</option>
+              <option value="unity">Unity (C# / prefabs)</option>
+              <option value="unreal">Unreal (Blueprints / C++)</option>
+              <option value="custom">Custom engine / pure design</option>
+            </select>
+
             <div style="font-size:12px; font-weight:600; color:#666; margin:10px 0 6px; display:flex; justify-content:space-between; align-items:center;">
               FREE-TEXT MECHANICS IDEAS OR "STEAL FROM / AVOID" REFERENCES
               <button onclick="extraReferences=[]; renderExtraNotes(); updateLivePrompt();" style="font-size:10px; padding:2px 6px; background:none; border:1px solid var(--border); border-radius:4px; cursor:pointer;">Clear</button>
@@ -398,6 +407,7 @@
           Weave Full Starter Kit
         </button>
         <button onclick="copyEmergingPrompt()" style="width:100%; margin-top:6px; padding:8px 12px; font-size:13px; background:none; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Copy Emerging as base</button>
+        <button onclick="copyShareLink()" style="width:100%; margin-top:6px; padding:6px 10px; font-size:12px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Copy shareable link (current vibe)</button>
       </div>
     </div>
   </div>
@@ -483,6 +493,7 @@
     let composition = [];
     let extraReferences = []; // free-text mechanics ideas, steal/avoid refs
     let promptKit = { main: '', rule: '', followUps: '' }; // for structured exports
+    let hashUpdateTimeout = null;
 
     const examples = {
       'precision-platformer': {
@@ -515,6 +526,73 @@
           'Warm, hand-crafted feel with readable icons and satisfying growth animations'
         ]
       }
+    };
+
+    // --- Shareable state via URL hash ---
+    function serializeState() {
+      const targetEl = document.getElementById('target-env');
+      return {
+        v: composition.map(r => ({ id: r.id, t: r.userTwist || '' })), // visuals + twists
+        f: (document.getElementById('core-fantasy')||{}).value || '',
+        m: (document.getElementById('mechanics')||{}).value || '',
+        n: [...extraReferences],
+        t: targetEl ? targetEl.value : 'general'
+      };
+    }
+
+    function deserializeAndLoad(state) {
+      if (!state) return;
+      clearCanvas();
+      (state.v || []).forEach(item => {
+        const ref = baseReferences.find(r => r.id === item.id);
+        if (ref) {
+          addToComposition(ref);
+          const found = composition.find(r => r.id === item.id);
+          if (found) found.userTwist = item.t || '';
+        }
+      });
+      const fEl = document.getElementById('core-fantasy');
+      const mEl = document.getElementById('mechanics');
+      if (fEl) fEl.value = state.f || '';
+      if (mEl) mEl.value = state.m || '';
+      extraReferences = Array.isArray(state.n) ? [...state.n] : [];
+      const tEl = document.getElementById('target-env');
+      if (tEl && state.t) tEl.value = state.t;
+      renderExtraNotes();
+      renderComposition();
+      updateLivePrompt();
+    }
+
+    function updateUrlHash() {
+      clearTimeout(hashUpdateTimeout);
+      hashUpdateTimeout = setTimeout(() => {
+        const state = serializeState();
+        if (state.v.length === 0) {
+          history.replaceState(null, '', window.location.pathname);
+          return;
+        }
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+        history.replaceState(null, '', '#' + encoded);
+      }, 300);
+    }
+
+    function loadFromHash() {
+      if (!location.hash) return;
+      try {
+        const encoded = location.hash.slice(1);
+        const json = decodeURIComponent(escape(atob(encoded)));
+        const state = JSON.parse(json);
+        deserializeAndLoad(state);
+      } catch (e) {
+        console.warn('Failed to load from hash', e);
+      }
+    }
+
+    // Hook state changes to update hash
+    const originalUpdateLivePrompt = updateLivePrompt;
+    updateLivePrompt = function() {
+      originalUpdateLivePrompt.apply(this, arguments);
+      updateUrlHash();
     };
 
     function saveCurrentPreset() {
@@ -745,6 +823,7 @@
         };
         container.appendChild(chip);
       });
+      updateUrlHash();
     }
 
     function renderComposition() {
@@ -776,6 +855,8 @@
             const el = document.getElementById(id);
             if (el) el.addEventListener('input', () => updateLivePrompt());
           });
+          const targetEl = document.getElementById('target-env');
+          if (targetEl) targetEl.addEventListener('change', () => updateLivePrompt());
         }
       }
       renderExtraNotes();
@@ -816,11 +897,14 @@
 
       const fantasy = (document.getElementById('core-fantasy') || {}).value || '';
       const mechanics = (document.getElementById('mechanics') || {}).value || '';
+      const targetEl = document.getElementById('target-env');
+      const target = targetEl ? targetEl.value : 'general';
       if (fantasy) text += `\nCore fantasy: ${fantasy}`;
       if (mechanics) text += `\nKey mechanics: ${mechanics}`;
       if (extraReferences.length) {
         text += `\nAdditional notes & references:\n` + extraReferences.map(n => `- ${n}`).join('\n');
       }
+      if (target !== 'general') text += `\nTarget: ${target}`;
 
       text += `\nTone: deliberate, juicy, high-fidelity feedback in the first 30 seconds. Every interaction should feel intentional and alive.`;
 
@@ -873,11 +957,19 @@
       const mechanicsEl = document.getElementById('mechanics');
       const fantasy = fantasyEl ? fantasyEl.value.trim() : '';
       const mechanics = mechanicsEl ? mechanicsEl.value.trim() : '';
+      const targetEl = document.getElementById('target-env');
+      const target = targetEl ? targetEl.value : 'general';
 
       let extraSection = '';
       if (extraReferences.length) {
         extraSection = `\n\nADDITIONAL NOTES & REFERENCES (steal/avoid + mechanics ideas):\n` + extraReferences.map(n => `- ${n}`).join('\n');
       }
+
+      let targetNote = '';
+      if (target === 'godot') targetNote = '\n\nTARGET: Godot 4 — use GDScript, scenes, nodes, signals, and Resource patterns. Prefer composition over inheritance.';
+      else if (target === 'unity') targetNote = '\n\nTARGET: Unity — use C#, prefabs, ScriptableObjects, and modern Input System + Addressables where relevant.';
+      else if (target === 'unreal') targetNote = '\n\nTARGET: Unreal — use Blueprints + C++ where performance matters. Follow Unreal naming and asset pipeline conventions.';
+      else if (target === 'custom') targetNote = '\n\nTARGET: Pure design / custom engine — focus on mechanics, data, and abstract systems. Avoid engine-specific jargon.';
 
       // Build the direct main prompt (what user pastes first)
       const mainPrompt = `You are an elite indie game designer who has shipped multiple high-feel, critically praised games (Hades, Celeste, Dead Cells, Ori, Hollow Knight, Return of the Obra Dinn). You obsess over the first 30 seconds, juice, tight readable feedback, and hand-crafted systems. Ruthlessly cut scope.
@@ -911,6 +1003,7 @@ Before finalizing, verify the output passes this internal checklist:
 - Scope is cut to a realistic first vertical slice only?
 - Anti-slop rules are specific/testable (not generic advice)?
 - A dev could build the first 15 minutes without guessing or adding slop?
+${targetNote}
 
 Short paragraphs, tight bullets. Name specific techniques from real games only as precise examples. Never vague.`;
 
@@ -926,14 +1019,19 @@ ALWAYS:
 
 NEVER produce generic slop: no floaty movement, no particle-only feedback, no unreadable effects, no "make it fun".
 
-When asked for code or specs, tie everything back to the visual language and core fantasy.`;
+When asked for code or specs, tie everything back to the visual language and core fantasy.${target === 'godot' ? ' Use GDScript patterns and node composition.' : target === 'unity' ? ' Use C# and ScriptableObject-driven design.' : target === 'unreal' ? ' Favor Blueprints for iteration speed.' : ''}`;
 
       // Follow-up prompts
+      let engineFollowUp = '5. Turn the vertical slice into a production-ready prompt for generating the first playable prototype. Include exact scope, tech constraints, and polish checklist.';
+      if (target === 'godot') engineFollowUp = '5. Turn this into a Godot 4 project starter: main scene structure, key scripts (GDScript), signals, and how to wire the first vertical slice.';
+      else if (target === 'unity') engineFollowUp = '5. Turn this into a Unity project starter: key prefabs, C# scripts (use modern Input System), ScriptableObject data, and first vertical slice setup.';
+      else if (target === 'unreal') engineFollowUp = '5. Turn this into an Unreal starter: core Blueprint actors, C++ where needed, Data Assets, and first vertical slice level setup.';
+
       const followUps = `1. Expand the vertical slice into a complete 15-minute design doc: exact player verbs, systems, content beats, and first area layout.
 2. Write the detailed movement + core verbs spec with exact timings, distances, acceleration curves, and per-interaction 3-layer feedback.
 3. Create the full Juice & Feedback bible for the slice: list every key interaction with sound, particles, camera, haptics, and state readability rules.
 4. Produce the art direction bible that translates the chosen visual references into concrete rules for every asset type (characters, environments, props, UI, effects).
-5. Turn the vertical slice into a production-ready prompt for generating the first playable prototype in [your engine]. Include exact scope, tech constraints, and polish checklist.`;
+${engineFollowUp}`;
 
       // Store kit
       promptKit = { main: mainPrompt, rule: projectRule, followUps: followUps };
@@ -991,6 +1089,20 @@ ${followUps}`;
       });
     }
 
+    function copyShareLink() {
+      const url = window.location.origin + window.location.pathname + location.hash;
+      navigator.clipboard.writeText(url).then(() => {
+        const btns = document.querySelectorAll('button');
+        btns.forEach(b => {
+          if (b.textContent.includes('shareable link')) {
+            const orig = b.textContent;
+            b.textContent = 'Link copied!';
+            setTimeout(() => b.textContent = orig, 1400);
+          }
+        });
+      });
+    }
+
     function flashCopied(originalLabel) {
       const btns = document.querySelectorAll('.export-btn');
       btns.forEach(b => {
@@ -1041,6 +1153,9 @@ ${followUps}`;
       setupDragDrop();
       renderComposition();
       updateLivePrompt();
+
+      // Load from URL hash if present (shareable vibes)
+      loadFromHash();
 
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {

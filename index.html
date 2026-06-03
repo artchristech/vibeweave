@@ -1094,6 +1094,12 @@ Before finalizing, verify the output passes this internal checklist:
 - A dev could build the first 15 minutes without guessing or adding slop?
 ${targetNote}
 
+Additional principles (apply these ruthlessly):
+- Every system must teach the player something new in the first 30s.
+- Use "readable before beautiful": state, danger, and opportunity must be legible at a glance.
+- Reference the exact visual language for *every* description of look, feel, animation, lighting, and UI.
+- Cut anything that doesn't directly serve the core fantasy or the chosen visuals.
+
 Short paragraphs, tight bullets. Name specific techniques from real games only as precise examples. Never vague.`;
 
       // Project rule (persistent .claude.md / Cursor rule)
@@ -1107,6 +1113,12 @@ ALWAYS:
 - Reference the exact visual rules for all descriptions of art, animation, lighting, UI.
 
 NEVER produce generic slop: no floaty movement, no particle-only feedback, no unreadable effects, no "make it fun".
+
+Apply these principles on every request:
+- Readable before beautiful.
+- 3+ feedback layers minimum.
+- Teach something in the first 30 seconds.
+- Cut scope to protect quality.
 
 When asked for code or specs, tie everything back to the visual language and core fantasy.${target === 'godot' ? ' Use GDScript patterns and node composition.' : target === 'unity' ? ' Use C# and ScriptableObject-driven design.' : target === 'unreal' ? ' Favor Blueprints for iteration speed.' : ''}`;
 

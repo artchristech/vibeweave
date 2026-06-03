@@ -10,7 +10,7 @@ Single-file, self-contained tool that helps game developers turn rough ideas int
 - Drag or tap to add visual directions to "Your Game".
 - For each direction, describe the specific game twist in that visual language.
 - Add free-text mechanics ideas or "Steal from X / Avoid Y" references.
-- Live "Emerging Prompt" updates in real time (refine the fantasy, mechanics, and notes).
+- **Live structured spec editor**: the right pane is now inline-editable structured sections (Fantasy, Mechanics, Notes) that sync live and power the kit.
 - "Weave" produces a full **Starter Prompt Kit**:
   - Main Prompt (ready to paste first)
   - Project Rule (persistent instructions for your project)

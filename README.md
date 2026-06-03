@@ -9,8 +9,14 @@ Single-file, self-contained tool that helps game developers turn rough ideas int
 - Horizontal scrolling gallery of real game-art references (realistic 3D, stylized 3D, isometric, hand-drawn 2D, modern pixel, atmospheric pixel — all your actual generated images, base64-embedded).
 - Drag or tap to add visual directions to "Your Game".
 - For each direction, describe the specific game twist in that visual language.
-- Live "Emerging Prompt" updates in real time.
-- "Weave" produces a dense, craft-heavy master prompt + suggested next prompts + ready-to-use exports.
+- Add free-text mechanics ideas or "Steal from X / Avoid Y" references.
+- Live "Emerging Prompt" updates in real time (refine the fantasy, mechanics, and notes).
+- "Weave" produces a full **Starter Prompt Kit**:
+  - Main Prompt (ready to paste first)
+  - Project Rule (persistent instructions for your project)
+  - Follow-up Prompts (5 targeted next steps)
+- One-click copy for each part or "Download Full Starter Kit" (3 .md files).
+- Loadable examples (Precision Platformer, Hades-like, Cozy Mutation Roguelite) to see strong inputs in action.
 
 ## How to use
 
@@ -18,8 +24,9 @@ Just open `index.html` (double-click or `open index.html`).
 
 - Scroll or use arrows on the gallery.
 - Click or drag cards into the canvas.
-- Fill in the "what kind of game..." twist for each.
-- Hit **Weave Final Prompt** when ready.
+- Fill twists per visual + Core Fantasy + Key Mechanics + free-text notes (steal/avoid).
+- (Optional) Load a Quick Start example to see a strong composition.
+- Hit **Weave Final Prompt** for the full kit with copy buttons and download.
 
 Exports: Copy full prompt, save as CLAUDE.md, or export Cursor rule.
 

@@ -383,7 +383,7 @@
 
       <div>
         <div class="prompt-preview">
-          <div class="label">EMERGING PROMPT</div>
+          <div class="label">EMERGING PROMPT — refine fields above, then Weave for full Starter Kit</div>
           <div id="live-prompt" style="min-height:180px; color:#8e8e93;">
             Add references to start building your prompt...
           </div>
@@ -729,7 +729,13 @@
       composition.forEach(ref => {
         const chip = document.createElement('div');
         chip.className = 'dropped-chip';
+        chip.style.cursor = 'pointer';
         chip.innerHTML = `${ref.title} <span class="remove">×</span>`;
+        chip.onclick = (e) => {
+          if (e.target.classList.contains('remove')) return;
+          // re-edit twist
+          showDescriptionMixer(ref);
+        };
         chip.querySelector('.remove').onclick = (e) => {
           e.stopImmediatePropagation();
           removeFromComposition(ref.id);

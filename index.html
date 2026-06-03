@@ -390,8 +390,9 @@
         </div>
 
         <button class="weave-button" id="weave-btn" onclick="finalizeWeave()" disabled>
-          Weave Final Prompt
+          Weave Full Starter Kit
         </button>
+        <button onclick="copyEmergingPrompt()" style="width:100%; margin-top:6px; padding:8px 12px; font-size:13px; background:none; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Copy Emerging as base</button>
       </div>
     </div>
   </div>
@@ -915,6 +916,18 @@ ${followUps}`;
       const text = promptKit.followUps || '';
       if (!text) return;
       navigator.clipboard.writeText(text).then(() => flashCopied('Copy Follow-ups'));
+    }
+
+    function copyEmergingPrompt() {
+      const text = document.getElementById('live-prompt').textContent || '';
+      if (!text || text.includes('Add references')) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.currentTarget; // not perfect but
+        // flash any emerging related or just alert style
+        const origTitle = document.title;
+        document.title = 'Copied emerging!';
+        setTimeout(() => document.title = origTitle, 800);
+      });
     }
 
     function flashCopied(originalLabel) {

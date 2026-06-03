@@ -35,7 +35,7 @@ Still rooted in the premium light Apple-grade direction:
 - Loadable high-quality examples + localStorage custom presets + URL hash sharing for exact vibes.
 - Target selector (Godot/Unity/Unreal/General) that tailors the output kit.
 - Weave produces full **Starter Prompt Kit**: Main Prompt + Project Rule + Follow-up Prompts, with dedicated copies and 3-file download.
-- Live "Emerging Prompt" + real-time slop risk indicator to guide better inputs.
+- Live **structured spec editor** (inline editable Core Fantasy, Key Mechanics, Notes sections in the right pane that sync bidirectionally with inputs) + real-time slop risk indicator.
 - Chips show twists; click to re-edit.
 
 ## Future Refinement Opportunities

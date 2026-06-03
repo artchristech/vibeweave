@@ -908,31 +908,69 @@
       }
 
       const titles = composition.map(r => r.title).join(' + ');
-      let text = `Visual direction: ${titles}\n\n`;
-      composition.forEach((r, i) => {
-        const twist = r.userTwist ? ` — ${r.userTwist}` : '';
-        text += `${i+1}. ${r.title}${twist}\n   ${r.desc}\n`;
-      });
-
       const fantasy = (document.getElementById('core-fantasy') || {}).value || '';
       const mechanics = (document.getElementById('mechanics') || {}).value || '';
       const targetEl = document.getElementById('target-env');
       const target = targetEl ? targetEl.value : 'general';
-      if (fantasy) text += `\nCore fantasy: ${fantasy}`;
-      if (mechanics) text += `\nKey mechanics: ${mechanics}`;
-      if (extraReferences.length) {
-        text += `\nAdditional notes & references:\n` + extraReferences.map(n => `- ${n}`).join('\n');
-      }
-      if (target !== 'general') text += `\nTarget: ${target}`;
+      const notesHtml = extraReferences.length ? extraReferences.map((n,i) => 
+        `<div class="live-note" data-idx="${i}" contenteditable="true" style="margin:2px 0; padding:2px 4px; background:#fff; border-radius:4px;">${n}</div>`
+      ).join('') : '<em style="color:#999">Add free-text notes above for extra power</em>';
 
-      text += `\nTone: deliberate, juicy, high-fidelity feedback in the first 30 seconds. Every interaction should feel intentional and alive.`;
+      let html = `
+        <div style="font-weight:600; margin-bottom:4px;">Visual Direction</div>
+        <div style="margin-bottom:8px; font-size:13px;">${titles}</div>
+
+        <div style="font-weight:600; margin-bottom:2px;">Core Fantasy</div>
+        <div id="live-fantasy" contenteditable="true" style="min-height:32px; padding:4px 6px; background:#fff; border:1px solid #ddd; border-radius:4px; margin-bottom:8px; font-size:13px;">${fantasy || '<em style="color:#999">Describe the heart of the game...</em>'}</div>
+
+        <div style="font-weight:600; margin-bottom:2px;">Key Mechanics</div>
+        <div id="live-mechanics" contenteditable="true" style="min-height:32px; padding:4px 6px; background:#fff; border:1px solid #ddd; border-radius:4px; margin-bottom:8px; font-size:13px;">${mechanics || '<em style="color:#999">List core systems/verbs...</em>'}</div>
+
+        <div style="font-weight:600; margin-bottom:2px;">Additional Notes & References</div>
+        <div style="margin-bottom:8px; font-size:12px;">${notesHtml}</div>
+
+        <div style="font-size:11px; color:#666; margin-top:6px;">
+          Target: <strong>${target}</strong> &nbsp;•&nbsp; Tone: deliberate, juicy, high-fidelity feedback in the first 30s.
+        </div>
+      `;
 
       if (composition.length > 0) {
-        text += `\n\n[Weave for the full Starter Kit: Main Prompt + Project Rule + 5 Follow-ups]`;
+        html += `<div style="margin-top:8px; font-size:11px; color:#0071e3; font-weight:500;">[Weave for the full Starter Kit: Main Prompt + Project Rule + 5 Follow-ups]</div>`;
       }
 
-      el.textContent = text;
+      el.innerHTML = html;
       el.style.color = '#1c1c1e';
+
+      // Wire live edits back to source fields
+      const liveFantasy = el.querySelector('#live-fantasy');
+      if (liveFantasy) {
+        liveFantasy.addEventListener('input', () => {
+          const src = document.getElementById('core-fantasy');
+          if (src) src.value = liveFantasy.textContent.trim();
+          updateSlopRisk();
+        });
+      }
+      const liveMechanics = el.querySelector('#live-mechanics');
+      if (liveMechanics) {
+        liveMechanics.addEventListener('input', () => {
+          const src = document.getElementById('mechanics');
+          if (src) src.value = liveMechanics.textContent.trim();
+          updateSlopRisk();
+        });
+      }
+      // Wire note edits
+      el.querySelectorAll('.live-note').forEach(noteEl => {
+        const idx = parseInt(noteEl.dataset.idx);
+        noteEl.addEventListener('input', () => {
+          extraReferences[idx] = noteEl.textContent.trim();
+          // Sync the source input area if needed (simple for now)
+          renderExtraNotes(); // refresh the main chips too
+          updateSlopRisk();
+        });
+        noteEl.addEventListener('blur', () => {
+          renderExtraNotes();
+        });
+      });
 
       // Simple slop risk indicator
       updateSlopRisk();

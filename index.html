@@ -428,6 +428,12 @@
       <div class="export-row" style="margin-top:8px;">
         <button class="export-btn" onclick="downloadStarterKit()">Download Full Starter Kit (3 files)</button>
       </div>
+      <div style="margin-top:12px; font-size:12px; color:#666;">Variations (re-weave with focus):</div>
+      <div class="export-row" style="margin-top:4px;">
+        <button class="export-btn" onclick="reweaveVariation('juice')">Max Juice</button>
+        <button class="export-btn" onclick="reweaveVariation('scope')">Tighter Scope</button>
+        <button class="export-btn" onclick="reweaveVariation('engine')">Engine Specific</button>
+      </div>
     </div>
   </div>
 
@@ -1135,6 +1141,28 @@ ${followUps}`;
           }
         });
       });
+    }
+
+    // Simple variations by temporarily boosting the intent and re-weaving
+    let variationMode = null;
+    function reweaveVariation(mode) {
+      variationMode = mode;
+      // Add a temporary note for the synthesis
+      const tempNote = mode === 'juice' ? 'MAXIMIZE juice, feedback layers, and moment-to-moment delight in every system.' :
+                       mode === 'scope' ? 'Be extremely ruthless with scope — only the absolute minimum for a compelling 10-minute vertical slice.' :
+                       'Tailor every recommendation, naming, and structure to the current target environment and its idioms.';
+      // Temporarily push
+      extraReferences.push(tempNote);
+      renderExtraNotes();
+      // Re-weave (the extra note will be picked up)
+      finalizeWeave();
+      // Clean up the temp note after display (user can keep or remove)
+      setTimeout(() => {
+        const idx = extraReferences.indexOf(tempNote);
+        if (idx > -1) extraReferences.splice(idx, 1);
+        renderExtraNotes();
+        updateLivePrompt();
+      }, 50);
     }
 
     function flashCopied(originalLabel) {

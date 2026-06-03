@@ -400,14 +400,17 @@
   <div class="modal" id="result-modal" onclick="if(event.target.id==='result-modal') closeModal()">
     <div class="modal-content" onclick="event.stopImmediatePropagation()">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <div style="font-size:18px; font-weight:600;">Master Prompt</div>
+        <div style="font-size:18px; font-weight:600;">Starter Prompt Kit</div>
         <button onclick="closeModal()" style="font-size:28px; background:none; border:none; cursor:pointer; line-height:1;">×</button>
       </div>
       <div id="final-prompt" class="final-prompt"></div>
       <div class="export-row">
-        <button class="export-btn primary" onclick="copyFinalPrompt()">Copy Full Prompt</button>
-        <button class="export-btn" onclick="downloadFile('CLAUDE.md', document.getElementById('final-prompt').textContent)">Export as CLAUDE.md</button>
-        <button class="export-btn" onclick="downloadFile('vibeweave-rule.mdc', 'Apply this rule for game development:\\n\\n' + document.getElementById('final-prompt').textContent)">Export for Cursor</button>
+        <button class="export-btn primary" onclick="copyMainPrompt()">Copy Main Prompt</button>
+        <button class="export-btn" onclick="copyProjectRule()">Copy Project Rule</button>
+        <button class="export-btn" onclick="copyFollowUps()">Copy Follow-ups</button>
+      </div>
+      <div class="export-row" style="margin-top:8px;">
+        <button class="export-btn" onclick="downloadStarterKit()">Download Full Starter Kit (3 files)</button>
       </div>
     </div>
   </div>
@@ -473,6 +476,7 @@
 
     let composition = [];
     let extraReferences = []; // free-text mechanics ideas, steal/avoid refs
+    let promptKit = { main: '', rule: '', followUps: '' }; // for structured exports
 
     const examples = {
       'precision-platformer': {
@@ -792,7 +796,6 @@
       const comp = composition;
       const visualStack = comp.map(r => r.title).join(' + ');
 
-      // Build rich visual language section from our per-ref data
       const visualRules = comp.map(r => {
         const lang = r.visualLanguage || r.desc;
         const notes = r.craftNotes ? `\n  Craft rule: ${r.craftNotes}` : '';
@@ -811,51 +814,118 @@
         extraSection = `\n\nADDITIONAL NOTES & REFERENCES (steal/avoid + mechanics ideas):\n` + extraReferences.map(n => `- ${n}`).join('\n');
       }
 
-      const final = `You are an elite indie game designer who has shipped multiple high-feel, critically praised games (Hades, Celeste, Dead Cells, Ori, Hollow Knight, Return of the Obra Dinn). You are obsessed with the first 30 seconds of play, "juice", tight readable feedback, and making every system feel hand-crafted and intentional. You ruthlessly cut scope to protect quality.
+      // Build the direct main prompt (what user pastes first)
+      const mainPrompt = `You are an elite indie game designer who has shipped multiple high-feel, critically praised games (Hades, Celeste, Dead Cells, Ori, Hollow Knight, Return of the Obra Dinn). You obsess over the first 30 seconds, juice, tight readable feedback, and hand-crafted systems. Ruthlessly cut scope.
 
-VISUAL LANGUAGE (these rules are non-negotiable — every description, animation, effect, and piece of UI must obey them):
+VISUAL LANGUAGE (obey these exactly — no exceptions):
 ${visualRules}
 
 PLAYER FANTASY & INTENT
-${fantasy ? `Core fantasy: ${fantasy}\n` : ''}${mechanics ? `Key mechanics the player will interact with: ${mechanics}\n` : ''}${twists || 'The player will discover the core fantasy through tight, deliberate interactions in the chosen visual style.'}${extraSection}
+${fantasy ? `Core fantasy: ${fantasy}\n` : ''}${mechanics ? `Key mechanics the player will interact with: ${mechanics}\n` : ''}${twists || 'Discover the fantasy through deliberate interactions.'}${extraSection}
 
-STRICT REQUIREMENTS FOR THE VERTICAL SLICE (first 10-20 minutes of play only):
-- Define 3-5 core player verbs and exactly how they feel in the first 30 seconds.
-- Every single interaction must have at least 3 layers of feedback (immediate visual, secondary motion/camera, audio/state change).
-- Animation and effects must communicate the new state *before* they look impressive.
-- Use the exact visual language above for color, lighting, silhouette priority, and motion feel. Do not invent new palettes or effects that fight the references.
-- No floating damage numbers, no generic "poof" particles as the only feedback, no placeholder "TODO" systems, no floaty unresponsive movement.
-- Write with extreme specificity: name exact timings, distances, frame counts, color hexes when they matter, and the exact feeling the player should have at each beat.
+STRICT REQUIREMENTS (vertical slice only — first 10-20 min):
+- 3-5 core verbs with exact feel and timing in the first 30s.
+- Every interaction needs 3+ feedback layers (visual + motion/camera + audio/state).
+- State communication BEFORE cool visuals.
+- Follow the visual language 100% for color, lighting, silhouette, motion.
+- No floaty movement, generic particles as only feedback, placeholders, or unreadable effects.
+- Extreme specificity on timings, distances, frames, and player feeling.
 
-OUTPUT THE FOLLOWING (nothing else, no intro text):
+Produce:
+1. One-sentence core fantasy + emotional promise.
+2. Core verbs + moment-to-moment loop with timings.
+3. Juice & Feedback spec (4-5 interactions, 3+ layers each).
+4. Visual language translation (exact rules for chars, env, UI, effects).
+5. Scope contract (in vs explicitly out).
+6. 5-7 vicious anti-slop rules for this combo.
+7. The exact next 5 prompts to run (narrow, sequential, building on output).
 
-1. One-sentence core fantasy + emotional promise (what the player should feel in the first 30-90 seconds and why the visuals support it).
-2. Exact core verbs + moment-to-moment loop for the vertical slice (include timing and feedback for each verb).
-3. Full Juice & Feedback spec for the slice (break down 4-5 key interactions with the 3+ layers each must have).
-4. Visual language translation (how every element in the game — characters, environments, UI, effects — must look and move to match the chosen references above. Be specific about silhouette, lighting, color use, and motion language).
-5. Ruthless scope contract: what is in this vertical slice (list every system and piece of content) and what is explicitly deferred (with one-sentence reasons).
-6. 5-7 concrete anti-slop rules derived from the above (vicious, testable, specific to this combination of visuals + fantasy).
-7. The exact next 5 prompts the developer should run in order (each one narrow, building directly on the previous output, focused on turning this into a real vertical slice).
+Short paragraphs, tight bullets. Name specific techniques from real games only as precise examples. Never vague.`;
 
-Write in short paragraphs and tight bullet lists. Name real shipped techniques and games only when they illustrate a precise, copyable principle. Be obsessive about readability, weight, and clarity. Never say "make it fun" or "polish it".`;
+      // Project rule (persistent .claude.md / Cursor rule)
+      const projectRule = `You are an elite game designer focused on high-feel, intentional systems.
 
-      document.getElementById('final-prompt').textContent = final;
+ALWAYS:
+- Start from the provided visual language and fantasy.
+- Enforce 3+ feedback layers on every interaction.
+- Prioritize readability and state communication in the first 30s.
+- Cut scope ruthlessly to deliver a polished vertical slice.
+- Reference the exact visual rules for all descriptions of art, animation, lighting, UI.
+
+NEVER produce generic slop: no floaty movement, no particle-only feedback, no unreadable effects, no "make it fun".
+
+When asked for code or specs, tie everything back to the visual language and core fantasy.`;
+
+      // Follow-up prompts
+      const followUps = `1. Expand the vertical slice into a complete 15-minute design doc: exact player verbs, systems, content beats, and first area layout.
+2. Write the detailed movement + core verbs spec with exact timings, distances, acceleration curves, and per-interaction 3-layer feedback.
+3. Create the full Juice & Feedback bible for the slice: list every key interaction with sound, particles, camera, haptics, and state readability rules.
+4. Produce the art direction bible that translates the chosen visual references into concrete rules for every asset type (characters, environments, props, UI, effects).
+5. Turn the vertical slice into a production-ready prompt for generating the first playable prototype in [your engine]. Include exact scope, tech constraints, and polish checklist.`;
+
+      // Store kit
+      promptKit = { main: mainPrompt, rule: projectRule, followUps: followUps };
+
+      // Display a nice combined view in the modal
+      const displayText = `MAIN PROMPT (paste this first)
+
+${mainPrompt}
+
+---
+
+PROJECT RULE (use as persistent CLAUDE.md / .mdc / custom instructions)
+
+${projectRule}
+
+---
+
+FOLLOW-UP PROMPTS (run these in order after the first response)
+
+${followUps}`;
+
+      document.getElementById('final-prompt').textContent = displayText;
       document.getElementById('result-modal').classList.add('show');
     }
 
-    function copyFinalPrompt() {
-      const text = document.getElementById('final-prompt').textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        const btns = document.querySelectorAll('.export-btn');
-        btns.forEach(b => {
-          if (b.textContent.includes('Copy')) {
-            const orig = b.textContent;
-            b.textContent = 'Copied!';
-            setTimeout(() => b.textContent = orig, 1400);
-          }
-        });
+    function copyMainPrompt() {
+      const text = promptKit.main || document.getElementById('final-prompt').textContent;
+      navigator.clipboard.writeText(text).then(() => flashCopied('Copy Main Prompt'));
+    }
+
+    function copyProjectRule() {
+      const text = promptKit.rule || '';
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => flashCopied('Copy Project Rule'));
+    }
+
+    function copyFollowUps() {
+      const text = promptKit.followUps || '';
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => flashCopied('Copy Follow-ups'));
+    }
+
+    function flashCopied(originalLabel) {
+      const btns = document.querySelectorAll('.export-btn');
+      btns.forEach(b => {
+        if (b.textContent.includes(originalLabel.split(' ')[0]) || b.textContent.includes('Copy')) {
+          const orig = b.textContent;
+          b.textContent = 'Copied!';
+          setTimeout(() => b.textContent = orig, 1200);
+        }
       });
     }
+
+    function downloadStarterKit() {
+      const main = promptKit.main || document.getElementById('final-prompt').textContent;
+      const rule = promptKit.rule || '';
+      const follow = promptKit.followUps || '';
+
+      downloadFile('vibeweave-main-prompt.md', main);
+      setTimeout(() => downloadFile('vibeweave-project-rule.md', rule), 200);
+      setTimeout(() => downloadFile('vibeweave-followup-prompts.md', follow), 400);
+    }
+
+    // copyFinalPrompt replaced by the new kit copy functions above
 
     function downloadFile(name, content) {
       const blob = new Blob([content], {type:'text/plain'});

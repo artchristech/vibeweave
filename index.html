@@ -338,6 +338,8 @@
         <button onclick="loadExample('precision-platformer')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Precision Platformer</button>
         <button onclick="loadExample('hades-like')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Hades-like</button>
         <button onclick="loadExample('cozy-mutation-roguelite')" style="font-size:12px; padding:4px 10px; background:#f0ede6; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Cozy Mutation Roguelite</button>
+        <button onclick="saveCurrentPreset()" style="font-size:11px; padding:4px 8px; background:#fff; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Save current</button>
+        <button onclick="loadLastPreset()" style="font-size:11px; padding:4px 8px; background:#fff; border:1px solid var(--border); border-radius:999px; cursor:pointer;">Load last saved</button>
       </div>
     </div>
 
@@ -514,6 +516,44 @@
         ]
       }
     };
+
+    function saveCurrentPreset() {
+      const name = prompt('Save preset as:');
+      if (!name || !name.trim()) return;
+      const p = {
+        visuals: composition.map(r => ({id: r.id, twist: r.userTwist || ''})),
+        fantasy: (document.getElementById('core-fantasy')||{}).value || '',
+        mechanics: (document.getElementById('mechanics')||{}).value || '',
+        notes: [...extraReferences]
+      };
+      localStorage.setItem('vibeweave_last_preset', JSON.stringify(p));
+      localStorage.setItem('vibeweave_preset_' + name.trim(), JSON.stringify(p));
+      alert('Saved as "' + name.trim() + '" (and as last). Use browser console or reload to load custom by name if needed. For now, "Load last saved" button added in next update.');
+      // For immediate, add a load last button dynamically if not
+    }
+
+    function loadLastPreset() {
+      const raw = localStorage.getItem('vibeweave_last_preset');
+      if (!raw) { alert('No last preset saved yet. Use Save current first.'); return; }
+      const p = JSON.parse(raw);
+      clearCanvas();
+      p.visuals.forEach(v => {
+        const ref = baseReferences.find(r => r.id === v.id);
+        if (ref) {
+          addToComposition(ref);
+          const item = composition.find(r => r.id === v.id);
+          if (item) item.userTwist = v.twist || '';
+        }
+      });
+      const f = document.getElementById('core-fantasy');
+      const m = document.getElementById('mechanics');
+      if (f) f.value = p.fantasy || '';
+      if (m) m.value = p.mechanics || '';
+      extraReferences = p.notes ? [...p.notes] : [];
+      renderExtraNotes();
+      renderComposition();
+      updateLivePrompt();
+    }
 
     function loadExample(key) {
       const ex = examples[key];

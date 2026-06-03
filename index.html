@@ -770,6 +770,10 @@
 
       text += `\nTone: deliberate, juicy, high-fidelity feedback in the first 30 seconds. Every interaction should feel intentional and alive.`;
 
+      if (composition.length > 0) {
+        text += `\n\n[Weave for the full Starter Kit: Main Prompt + Project Rule + 5 Follow-ups]`;
+      }
+
       el.textContent = text;
       el.style.color = '#1c1c1e';
     }

@@ -685,7 +685,17 @@
         const chip = document.createElement('div');
         chip.className = 'dropped-chip';
         chip.style.background = '#e8f0fe';
+        chip.style.cursor = 'pointer';
         chip.innerHTML = `${note} <span class="remove">×</span>`;
+        chip.onclick = (e) => {
+          if (e.target.classList.contains('remove')) return;
+          const newText = prompt('Edit note:', note);
+          if (newText !== null && newText.trim()) {
+            extraReferences[i] = newText.trim();
+            renderExtraNotes();
+            updateLivePrompt();
+          }
+        };
         chip.querySelector('.remove').onclick = (e) => {
           e.stopImmediatePropagation();
           removeExtraNote(i);

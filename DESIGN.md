@@ -28,12 +28,25 @@ Still rooted in the premium light Apple-grade direction:
 - Drag-and-drop is native + enhanced with click-to-add fallback.
 - Live prompt preview updates intelligently based on selected references.
 
-## Future Refinement Opportunities
-- More 3D references (deeper genre coverage)
-- Ability to combine references with custom text notes
-- Richer live preview (showing how references interact)
-- One-click "export this exact composition as a shareable link"
+## Current State (as of latest shipping)
+- Image-based horizontal gallery with 6 real embedded user game-art references (base64, no external files).
+- Composition via drag/click + per-visual twists.
+- Rich inputs: Core Fantasy, Key Mechanics, free-text "steal/avoid/mechanics ideas" (editable chips).
+- Loadable high-quality examples + localStorage custom presets + URL hash sharing for exact vibes.
+- Target selector (Godot/Unity/Unreal/General) that tailors the output kit.
+- Weave produces full **Starter Prompt Kit**: Main Prompt + Project Rule + Follow-up Prompts, with dedicated copies and 3-file download.
+- Live "Emerging Prompt" + real-time slop risk indicator to guide better inputs.
+- Chips show twists; click to re-edit.
 
-This direction is deliberately more ambitious than the previous minimal version because it directly addresses what vibe coders repeatedly ask for: a way to work visually and spatially with game feel references instead of purely through text.
+## Future Refinement Opportunities
+- Structured mechanics builder (cards instead of pure text for systems).
+- Prompt variations on the fly ("more juice", "stricter scope").
+- Richer live spec editor (editable sections instead of derived text).
+- Even more built-in examples + community preset import (JSON).
+- Engine-specific deeper tailoring and code-gen hints in follow-ups.
+- Onboarding tour and "why this fights slop" inline explanations.
+- Mobile-first gallery improvements (better swipe, vertical fallback).
+
+This direction is deliberately more ambitious than the previous minimal version because it directly addresses what vibe coders repeatedly ask for: a way to work visually and spatially with game feel references instead of purely through text, while injecting real craft and anti-slop discipline into the resulting prompts.
 
 Every interaction should feel delightful, intentional, and like real creative work is happening.

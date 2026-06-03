@@ -741,7 +741,8 @@
         const chip = document.createElement('div');
         chip.className = 'dropped-chip';
         chip.style.cursor = 'pointer';
-        chip.innerHTML = `${ref.title} <span class="remove">×</span>`;
+        const twist = ref.userTwist ? ` — ${ref.userTwist}` : '';
+        chip.innerHTML = `${ref.title}${twist} <span class="remove">×</span>`;
         chip.onclick = (e) => {
           if (e.target.classList.contains('remove')) return;
           // re-edit twist

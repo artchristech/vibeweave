@@ -231,6 +231,11 @@
       line-height: 1;
     }
 
+    .palette-item:hover {
+      background: #e0e7ff !important;
+      border-color: #0071e3 !important;
+    }
+
     .prompt-preview {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -367,32 +372,44 @@
           </div>
           <div id="dropped-items" class="dropped-items"></div>
 
-          <div id="intent-panel" style="margin-top:16px; display:none; background:#f9f7f2; border:1px solid var(--border); border-radius:12px; padding:14px;">
-            <div style="font-size:12px; font-weight:600; color:#666; margin-bottom:6px;">CORE FANTASY (what is the game really about?)</div>
-            <textarea id="core-fantasy" placeholder="A lonely courier in a dying world who can briefly rewind time by playing old cassette tapes..." style="width:100%; height:52px; border:1px solid var(--border); border-radius:8px; padding:8px; font-size:13px; resize:vertical;"></textarea>
-
-            <div style="font-size:12px; font-weight:600; color:#666; margin:10px 0 6px;">KEY MECHANICS OR SYSTEMS YOU ALREADY KNOW YOU WANT</div>
-            <textarea id="mechanics" placeholder="Time-rewind tied to physical tapes. Permanent world changes that carry between loops. One big hub that slowly reveals new paths." style="width:100%; height:46px; border:1px solid var(--border); border-radius:8px; padding:8px; font-size:13px; resize:vertical;"></textarea>
-
-            <div style="font-size:12px; font-weight:600; color:#666; margin:10px 0 6px;">TARGET (customizes the kit for your tools/engine)</div>
-            <select id="target-env" style="width:100%; border:1px solid var(--border); border-radius:8px; padding:6px; font-size:13px;" onchange="updateLivePrompt()">
-              <option value="general">General (Claude / Cursor)</option>
-              <option value="godot">Godot (GDScript / scenes)</option>
-              <option value="unity">Unity (C# / prefabs)</option>
-              <option value="unreal">Unreal (Blueprints / C++)</option>
-              <option value="custom">Custom engine / pure design</option>
-            </select>
-
-            <div style="font-size:12px; font-weight:600; color:#666; margin:10px 0 6px; display:flex; justify-content:space-between; align-items:center;">
-              FREE-TEXT MECHANICS IDEAS OR "STEAL FROM / AVOID" REFERENCES
-              <button onclick="extraReferences=[]; renderExtraNotes(); updateLivePrompt();" style="font-size:10px; padding:2px 6px; background:none; border:1px solid var(--border); border-radius:4px; cursor:pointer;">Clear</button>
+          <!-- Drag & Drop Layer Palette - the main "next layer" after choosing base visuals -->
+          <div id="layer-palette" style="margin-top:12px; display:none;">
+            <div style="font-size:11px; font-weight:600; color:#666; margin-bottom:4px;">NEXT LAYER: DRAG IDEAS ONTO YOUR VISUALS (or drop in global area below)</div>
+            <div id="palette-tray" style="display:flex; flex-wrap:wrap; gap:4px; padding:6px; background:#f9f7f2; border:1px dashed var(--border); border-radius:6px; min-height:60px;">
+              <!-- Populated dynamically by JS with draggable layer cards -->
             </div>
-            <div style="display:flex; gap:6px; margin-bottom:6px;">
-              <input id="extra-note-input" placeholder="Steal the wall-cling + coyote time from Celeste • Avoid floaty jumps" style="flex:1; border:1px solid var(--border); border-radius:8px; padding:6px; font-size:13px;" onkeydown="if(event.key==='Enter'){addExtraNote();}">
-              <button onclick="addExtraNote()" style="padding:6px 12px; background:#0071e3; color:white; border:none; border-radius:8px; font-size:13px; cursor:pointer;">Add</button>
+            <div style="margin-top:4px; display:flex; gap:4px; align-items:center;">
+              <input id="custom-layer-input" placeholder="Create custom layer..." style="flex:1; font-size:11px; padding:3px 6px; border:1px solid var(--border); border-radius:4px;">
+              <button onclick="createCustomLayer()" style="font-size:10px; padding:3px 8px; background:#0071e3; color:white; border:none; border-radius:4px; cursor:pointer;">Create</button>
             </div>
-            <div id="extra-notes" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
           </div>
+
+          <!-- Global layers drop zone -->
+          <div id="global-layers-zone" style="margin-top:6px; min-height:28px; padding:4px; border:1px dashed #ccc; border-radius:4px; display:none; font-size:11px;">
+            <span style="color:#999;">Global layers (drop here):</span>
+            <div id="global-layer-list" style="display:flex; flex-wrap:wrap; gap:3px; margin-top:3px;"></div>
+          </div>
+
+          <!-- Advanced settings - the typing is de-emphasized -->
+          <details id="advanced-settings" style="margin-top:8px; display:none;">
+            <summary style="font-size:11px; color:#666; cursor:pointer; outline:none;">Advanced settings (full text descriptions)</summary>
+            <div style="margin-top:8px; background:#f9f7f2; border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="font-size:11px; font-weight:600; color:#666; margin-bottom:4px;">CORE FANTASY (what is the game really about?)</div>
+              <textarea id="core-fantasy" placeholder="A lonely courier in a dying world who can briefly rewind time by playing old cassette tapes..." style="width:100%; height:40px; border:1px solid var(--border); border-radius:6px; padding:6px; font-size:12px; resize:vertical;"></textarea>
+
+              <div style="font-size:11px; font-weight:600; color:#666; margin:6px 0 4px;">KEY MECHANICS OR SYSTEMS YOU ALREADY KNOW YOU WANT</div>
+              <textarea id="mechanics" placeholder="Time-rewind tied to physical tapes. Permanent world changes that carry between loops. One big hub that slowly reveals new paths." style="width:100%; height:36px; border:1px solid var(--border); border-radius:6px; padding:6px; font-size:12px; resize:vertical;"></textarea>
+
+              <div style="font-size:11px; font-weight:600; color:#666; margin:6px 0 4px;">TARGET (customizes the kit for your tools/engine)</div>
+              <select id="target-env" style="width:100%; border:1px solid var(--border); border-radius:6px; padding:4px; font-size:12px;" onchange="updateLivePrompt()">
+                <option value="general">General (Claude / Cursor)</option>
+                <option value="godot">Godot (GDScript / scenes)</option>
+                <option value="unity">Unity (C# / prefabs)</option>
+                <option value="unreal">Unreal (Blueprints / C++)</option>
+                <option value="custom">Custom engine / pure design</option>
+              </select>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -545,14 +562,140 @@
       }
     };
 
+    // Layer palette data for drag & drop "next layer" (seamless after choosing visuals)
+    let layerPalette = [
+      { text: "Time rewind via physical objects", category: "mechanics" },
+      { text: "Permanent world mutations that carry across runs", category: "mechanics" },
+      { text: "Ability-gated exploration & backtracking", category: "mechanics" },
+      { text: "Coyote time + wall-cling from Celeste", category: "steal" },
+      { text: "Ultra-clear boon descriptions + enemy telegraphs from Hades", category: "steal" },
+      { text: "Satisfying ability progression from Hollow Knight / Ori", category: "steal" },
+      { text: "Avoid floaty unresponsive movement", category: "avoid" },
+      { text: "Avoid unreadable particle spam or screen clutter", category: "avoid" },
+      { text: "Avoid cryptic progression without clear visual language", category: "avoid" },
+      { text: "A lone explorer reclaiming a ruined world", category: "fantasy" },
+      { text: "Gentle gardener tending a living, remembering world", category: "fantasy" },
+      { text: "Fast stylish combat with meaningful choices", category: "fantasy" }
+    ];
+
+    let globalLayers = [];
+
+    function renderLayerPalette() {
+      const tray = document.getElementById('palette-tray');
+      if (!tray) return;
+      tray.innerHTML = '';
+      layerPalette.forEach((layer) => {
+        const div = document.createElement('div');
+        div.className = 'palette-item';
+        div.draggable = true;
+        div.style.cssText = 'font-size:10px; padding:3px 5px; background:white; border:1px solid #ccc; border-radius:3px; cursor:grab; max-width:110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+        div.textContent = layer.text;
+        div.title = layer.text + ' (' + layer.category + ')';
+        div.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'palette-layer', text: layer.text, category: layer.category }));
+        });
+        tray.appendChild(div);
+      });
+    }
+
+    function createCustomLayer() {
+      const input = document.getElementById('custom-layer-input');
+      if (!input || !input.value.trim()) return;
+      const text = input.value.trim();
+      // Add as custom to palette for this session (draggable)
+      layerPalette.push({ text: text, category: 'custom' });
+      renderLayerPalette();
+      // Also immediately offer to attach as global for ease
+      globalLayers.push({ text: text });
+      renderGlobalLayers();
+      input.value = '';
+      updateLivePrompt();
+    }
+
+    function attachLayerToVisual(visualId, layerData) {
+      const item = composition.find(r => r.id === visualId);
+      if (!item) return;
+      if (!item.layers) item.layers = [];
+      // avoid duplicates
+      if (!item.layers.some(l => l.text === layerData.text)) {
+        item.layers.push({ text: layerData.text, category: layerData.category || 'custom' });
+      }
+    }
+
+    function renderGlobalLayers() {
+      const zone = document.getElementById('global-layers-zone');
+      const list = document.getElementById('global-layer-list');
+      if (!zone || !list) return;
+      if (globalLayers.length === 0 && document.getElementById('layer-palette') && document.getElementById('layer-palette').style.display !== 'none') {
+        zone.style.display = 'block';
+        list.innerHTML = '<span style="color:#999; font-size:10px;">Drop layers here for global composition</span>';
+        // Make zone droppable
+        zone.ondragover = e => { e.preventDefault(); zone.style.boxShadow = '0 0 0 2px #0071e3 inset'; };
+        zone.ondragleave = () => zone.style.boxShadow = '';
+        zone.ondrop = e => {
+          e.preventDefault();
+          zone.style.boxShadow = '';
+          try {
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            if (data.type === 'palette-layer') {
+              globalLayers.push({ text: data.text, category: data.category });
+              renderGlobalLayers();
+              updateLivePrompt();
+            }
+          } catch (err) {}
+        };
+        return;
+      }
+      if (globalLayers.length === 0) {
+        zone.style.display = 'none';
+        return;
+      }
+      zone.style.display = 'block';
+      list.innerHTML = '';
+      globalLayers.forEach((layer, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'dropped-chip';
+        chip.style.fontSize = '10px';
+        chip.style.padding = '2px 5px';
+        chip.innerHTML = `${layer.text} <span class="remove">×</span>`;
+        chip.querySelector('.remove').onclick = (e) => {
+          e.stopImmediatePropagation();
+          globalLayers.splice(idx, 1);
+          renderGlobalLayers();
+          updateLivePrompt();
+        };
+        list.appendChild(chip);
+      });
+      // Make zone droppable even with items
+      zone.ondragover = e => { e.preventDefault(); zone.style.boxShadow = '0 0 0 2px #0071e3 inset'; };
+      zone.ondragleave = () => zone.style.boxShadow = '';
+      zone.ondrop = e => {
+        e.preventDefault();
+        zone.style.boxShadow = '';
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          if (data.type === 'palette-layer') {
+            globalLayers.push({ text: data.text, category: data.category });
+            renderGlobalLayers();
+            updateLivePrompt();
+          }
+        } catch (err) {}
+      };
+    }
+
     // --- Shareable state via URL hash ---
     function serializeState() {
       const targetEl = document.getElementById('target-env');
       return {
-        v: composition.map(r => ({ id: r.id, t: r.userTwist || '' })), // visuals + twists
+        v: composition.map(r => ({ 
+          id: r.id, 
+          t: r.userTwist || '',
+          layers: r.layers ? r.layers.map(l => ({text: l.text})) : []
+        })), 
         f: (document.getElementById('core-fantasy')||{}).value || '',
         m: (document.getElementById('mechanics')||{}).value || '',
         n: [...extraReferences],
+        g: globalLayers.map(l => ({text: l.text})),
         t: targetEl ? targetEl.value : 'general'
       };
     }
@@ -565,7 +708,10 @@
         if (ref) {
           addToComposition(ref);
           const found = composition.find(r => r.id === item.id);
-          if (found) found.userTwist = item.t || '';
+          if (found) {
+            found.userTwist = item.t || '';
+            found.layers = item.layers || [];
+          }
         }
       });
       const fEl = document.getElementById('core-fantasy');
@@ -573,9 +719,11 @@
       if (fEl) fEl.value = state.f || '';
       if (mEl) mEl.value = state.m || '';
       extraReferences = Array.isArray(state.n) ? [...state.n] : [];
+      globalLayers = Array.isArray(state.g) ? state.g.map(l => ({text: l.text})) : [];
       const tEl = document.getElementById('target-env');
       if (tEl && state.t) tEl.value = state.t;
       renderExtraNotes();
+      renderGlobalLayers();
       renderComposition();
       updateLivePrompt();
     }
@@ -659,9 +807,19 @@
         const ref = baseReferences.find(r => r.id === id);
         if (ref) {
           addToComposition(ref);
-          // set a basic twist so it feels populated
           const item = composition.find(r => r.id === id);
-          if (item) item.userTwist = 'in this visual style';
+          if (item) {
+            item.userTwist = 'in this visual style';
+            item.layers = [];
+            // Pre-attach some matching layers from palette for demo of drag flow
+            if (ex.notes) {
+              ex.notes.forEach(noteText => {
+                // match some notes to layers
+                const match = layerPalette.find(lp => noteText.toLowerCase().includes(lp.text.toLowerCase().slice(0,10)) || lp.text.toLowerCase().includes(noteText.toLowerCase().slice(0,10)));
+                if (match) item.layers.push({text: match.text, category: match.category});
+              });
+            }
+          }
         }
       });
       // Set the fields
@@ -855,8 +1013,14 @@
         btn.disabled = true;
         const panel = document.getElementById('intent-panel');
         if (panel) panel.style.display = 'none';
+        const palette = document.getElementById('layer-palette');
+        if (palette) palette.style.display = 'none';
+        const globalZone = document.getElementById('global-layers-zone');
+        if (globalZone) globalZone.style.display = 'none';
         extraReferences = [];
+        globalLayers = [];
         renderExtraNotes();
+        renderGlobalLayers();
         return;
       }
 
@@ -876,26 +1040,99 @@
           if (targetEl) targetEl.addEventListener('change', () => updateLivePrompt());
         }
       }
+
+      // Show the drag layer palette once we have base visuals
+      const palette = document.getElementById('layer-palette');
+      if (palette) {
+        palette.style.display = 'block';
+        if (!palette.dataset.painted) {
+          palette.dataset.painted = 'true';
+          renderLayerPalette();
+        }
+      }
+      const globalZone = document.getElementById('global-layers-zone');
+      if (globalZone) globalZone.style.display = 'block';
+
       renderExtraNotes();
+      renderGlobalLayers();
 
       if (typeof updateSlopRisk === 'function') updateSlopRisk();
 
+      const adv = document.getElementById('advanced-settings');
+      if (adv) adv.style.display = 'block';
+
       composition.forEach(ref => {
+        if (!ref.layers) ref.layers = [];
         const chip = document.createElement('div');
         chip.className = 'dropped-chip';
         chip.style.cursor = 'pointer';
+        chip.style.flexDirection = 'column';
+        chip.style.alignItems = 'flex-start';
+        chip.style.padding = '4px 8px';
         const twist = ref.userTwist ? ` — ${ref.userTwist}` : '';
-        chip.innerHTML = `${ref.title}${twist} <span class="remove">×</span>`;
+        let html = `<div style="display:flex; align-items:center; width:100%;"><span>${ref.title}${twist}</span> <span class="remove" style="margin-left:auto;">×</span></div>`;
+        
+        // Render attached layers as sub-chips
+        if (ref.layers.length > 0) {
+          html += '<div style="display:flex; flex-wrap:wrap; gap:2px; margin-top:3px; width:100%;">';
+          ref.layers.forEach((layer, lidx) => {
+            html += `<span style="font-size:9px; background:#e8f0fe; padding:1px 4px; border-radius:3px; white-space:nowrap;">${layer.text} <span class="layer-remove" data-lidx="${lidx}">×</span></span>`;
+          });
+          html += '</div>';
+        }
+        chip.innerHTML = html;
+
+        // Make this visual chip a drop target for layers
+        chip.addEventListener('dragover', e => { e.preventDefault(); chip.style.boxShadow = '0 0 0 2px #0071e3'; });
+        chip.addEventListener('dragleave', () => chip.style.boxShadow = '');
+        chip.addEventListener('drop', e => {
+          e.preventDefault();
+          chip.style.boxShadow = '';
+          try {
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            if (data.type === 'palette-layer') {
+              attachLayerToVisual(ref.id, data);
+              renderComposition();
+              updateLivePrompt();
+            }
+          } catch (err) {}
+        });
+
         chip.onclick = (e) => {
-          if (e.target.classList.contains('remove')) return;
+          if (e.target.classList.contains('remove')) {
+            e.stopImmediatePropagation();
+            removeFromComposition(ref.id);
+            return;
+          }
+          if (e.target.classList.contains('layer-remove')) {
+            e.stopImmediatePropagation();
+            const lidx = parseInt(e.target.dataset.lidx);
+            ref.layers.splice(lidx, 1);
+            renderComposition();
+            updateLivePrompt();
+            return;
+          }
           // re-edit twist
           showDescriptionMixer(ref);
         };
-        chip.querySelector('.remove').onclick = (e) => {
-          e.stopImmediatePropagation();
-          removeFromComposition(ref.id);
-        };
+
         container.appendChild(chip);
+      });
+
+      // Global drop on the dropped-items area (for layers not attached to specific visual)
+      container.addEventListener('dragover', e => { e.preventDefault(); container.style.boxShadow = '0 0 0 2px #0071e3 inset'; });
+      container.addEventListener('dragleave', () => container.style.boxShadow = '');
+      container.addEventListener('drop', e => {
+        e.preventDefault();
+        container.style.boxShadow = '';
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          if (data.type === 'palette-layer') {
+            globalLayers.push({ text: data.text, category: data.category });
+            renderGlobalLayers();
+            updateLivePrompt();
+          }
+        } catch (err) {}
       });
     }
 
@@ -912,30 +1149,35 @@
       const mechanics = (document.getElementById('mechanics') || {}).value || '';
       const targetEl = document.getElementById('target-env');
       const target = targetEl ? targetEl.value : 'general';
-      const notesHtml = extraReferences.length ? extraReferences.map((n,i) => 
-        `<div class="live-note" data-idx="${i}" contenteditable="true" style="margin:2px 0; padding:2px 4px; background:#fff; border-radius:4px;">${n}</div>`
-      ).join('') : '<em style="color:#999">Add free-text notes above for extra power</em>';
 
       let html = `
-        <div style="font-weight:600; margin-bottom:4px;">Visual Direction</div>
-        <div style="margin-bottom:8px; font-size:13px;">${titles}</div>
+        <div style="font-weight:600; margin-bottom:4px;">Visual Direction + Dragged Layers</div>
+        <div style="margin-bottom:6px; font-size:12px;">${titles}</div>
+      `;
 
-        <div style="font-weight:600; margin-bottom:2px;">Core Fantasy</div>
-        <div id="live-fantasy" contenteditable="true" style="min-height:32px; padding:4px 6px; background:#fff; border:1px solid #ddd; border-radius:4px; margin-bottom:8px; font-size:13px;">${fantasy || '<em style="color:#999">Describe the heart of the game...</em>'}</div>
+      // Show layers per visual (the drag & drop result)
+      composition.forEach(r => {
+        if (r.layers && r.layers.length > 0) {
+          html += `<div style="font-size:10px; margin-bottom:2px;"><strong>${r.title} layers:</strong> ${r.layers.map(l => l.text).join(' • ')}</div>`;
+        }
+      });
+
+      if (globalLayers.length > 0) {
+        html += `<div style="font-size:10px; margin-bottom:4px;"><strong>Global layers:</strong> ${globalLayers.map(l => l.text).join(' • ')}</div>`;
+      }
+
+      html += `
+        <div style="font-weight:600; margin:6px 0 2px;">Core Fantasy</div>
+        <div id="live-fantasy" contenteditable="true" style="min-height:28px; padding:3px 5px; background:#fff; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; font-size:12px;">${fantasy || '<em style="color:#999">Describe the heart of the game...</em>'}</div>
 
         <div style="font-weight:600; margin-bottom:2px;">Key Mechanics</div>
-        <div id="live-mechanics" contenteditable="true" style="min-height:32px; padding:4px 6px; background:#fff; border:1px solid #ddd; border-radius:4px; margin-bottom:8px; font-size:13px;">${mechanics || '<em style="color:#999">List core systems/verbs...</em>'}</div>
+        <div id="live-mechanics" contenteditable="true" style="min-height:28px; padding:3px 5px; background:#fff; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; font-size:12px;">${mechanics || '<em style="color:#999">List core systems/verbs...</em>'}</div>
 
-        <div style="font-weight:600; margin-bottom:2px;">Additional Notes & References</div>
-        <div style="margin-bottom:8px; font-size:12px;">${notesHtml}</div>
-
-        <div style="font-size:11px; color:#666; margin-top:6px;">
-          Target: <strong>${target}</strong> &nbsp;•&nbsp; Tone: deliberate, juicy, high-fidelity feedback in the first 30s.
-        </div>
+        <div style="font-size:10px; color:#666;">Target: <strong>${target}</strong> &nbsp;•&nbsp; Tone: deliberate, juicy, high-fidelity feedback in the first 30s. (Drag layers for the main composition — full text in Advanced)</div>
       `;
 
       if (composition.length > 0) {
-        html += `<div style="margin-top:8px; font-size:11px; color:#0071e3; font-weight:500;">[Weave for the full Starter Kit: Main Prompt + Project Rule + 5 Follow-ups]</div>`;
+        html += `<div style="margin-top:6px; font-size:10px; color:#0071e3; font-weight:500;">[Weave for the full Starter Kit: Main Prompt + Project Rule + 5 Follow-ups]</div>`;
       }
 
       el.innerHTML = html;
@@ -1008,7 +1250,9 @@
     function clearCanvas() {
       composition = [];
       extraReferences = [];
+      globalLayers = [];
       renderExtraNotes();
+      renderGlobalLayers();
       renderComposition();
       updateLivePrompt();
     }
@@ -1037,7 +1281,11 @@
       const visualRules = comp.map(r => {
         const lang = r.visualLanguage || r.desc;
         const notes = r.craftNotes ? `\n  Craft rule: ${r.craftNotes}` : '';
-        return `- ${r.title}: ${lang}${notes}`;
+        let layerText = '';
+        if (r.layers && r.layers.length > 0) {
+          layerText = `\n  Dragged layers: ${r.layers.map(l => l.text).join(' • ')}`;
+        }
+        return `- ${r.title}: ${lang}${notes}${layerText}`;
       }).join('\n');
 
       const twists = comp.map(r => r.userTwist ? `${r.title}: ${r.userTwist}` : '').filter(Boolean).join('\n');
@@ -1052,6 +1300,9 @@
       let extraSection = '';
       if (extraReferences.length) {
         extraSection = `\n\nADDITIONAL NOTES & REFERENCES (steal/avoid + mechanics ideas):\n` + extraReferences.map(n => `- ${n}`).join('\n');
+      }
+      if (globalLayers.length > 0) {
+        extraSection += `\n\nGLOBAL DRAGGED LAYERS:\n` + globalLayers.map(l => `- ${l.text}`).join('\n');
       }
 
       let targetNote = '';
@@ -1279,6 +1530,11 @@ ${followUps}`;
 
       // Load from URL hash if present (shareable vibes)
       loadFromHash();
+
+      // Ensure palette is rendered (for drag layer items)
+      if (typeof renderLayerPalette === 'function') {
+        // It will show when first visual is added
+      }
 
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
